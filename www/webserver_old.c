@@ -83,13 +83,11 @@ int get(int connfd){
     int b = 4;
     int buflength = strlen(buf) - 1;
     char filepath[buflength - 4];
-    bzero(filepath, sizeof(filepath));
     while( a <= buflength - 4){
         filepath[a] = buf[b];
         a++;
         b++;
         }
-    printf("filepath: %s\n", filepath);
     strtok(filepath, "\n");
 
 
@@ -119,111 +117,54 @@ int get(int connfd){
         strcat(rString,fstring);
         //printf("httpmsg after second%s\n",rString);
         strcpy(buf,rString);
-        //printf("server returning a http message with the following content.\n%s\n",buf);
+        printf("server returning a http message with the following content.\n%s\n",buf);
         write(connfd, buf,sizeof(rString));
-        restoreBuf(buf);
+        //restoreBuf(buf);
     }
 
-    else{
-        /*extract directory*/
-        char dir[50];
-        strcpy(dir, "");
+    // else{
+    //     /*extract directory*/
+    //     char dir[20];
+    //     char fname[20];
+    //     char c = filepath[1];
+    //     int i = 1;
+    //     while(c != '/'){
+    //         c = filepath[i];
+    //         dir[i] = filepath[i];
+    //         i++;
+    //     }
+    //     /*extract filename*/
+        
+    //     while(c != ' '){
+    //         c = filepath[i];
+    //         fname[i] = filepath[i];
+    //         i++;
+    //     }
+    //     strcat(dir,fname);
+    //     long int fsize = fileSize(dir);
+    //     int numBytes = 0;
+    //     int file;
+    //     file = open(dir, O_RDONLY); 
+    //     rFile(file,fstring,MAXLINE,&numBytes); //= "\r\n\r\n<html><h1>Default</h1>";
 
-        int i = 1;
-        while(1){
-            if(filepath[i] == ' '){
-                break;
-            }
-            dir[i-1] = filepath[i];
-            printf("%c\n",filepath[i]);
-            i++;
-        }
-        
-        
+    //     httpmsg="HTTP/1.1 200 Document Follows\r\nContent-Type:text/html\r\nContent-Length:";
 
-        /*get file extension*/
-        int q = 1;
-        char* ext;
-        while(q <= 50){
-            if(dir[q] == '.'){
-                if(dir[q+1] == 'h'){
-                    ext = "text/html";
-                }
-                else if(dir[q+1] == 't'){
-                    ext = "text/plain";
-                }
-                else if(dir[q+1] == 'p'){
-                    ext = "image/png";
-                }
-                else if(dir[q+1] == 'g'){
-                    ext = "image/gif";
-                }
-                else if(dir[q+1] == 'j'){
-                    if(dir[q+2] == 's'){
-                        ext = "application/javascript";
-                    }
-                    else{
-                        ext = "image/jpg";
-                    }
-                }
-                else if(dir[q+1] == 'c'){
-                    ext = "text/css";
-                }
-            }
-            q++;
-        }
-        
-        /*write to a file to see the commands*/
-            FILE* fptr = fopen("PrintStatements.txt", "a");
-            fputs(dir, fptr);
-            fclose(fptr);
-        /*end of file write*/
+    //     char sizeString[4];
+    //     sprintf(sizeString, "%ld", fsize);
+    //     //printf("sizeString %s\n",sizeString);
+    //     strcat(rString, httpmsg);
+    //     //printf("rString%s\n",rString);
+    //     strcat(rString,sizeString);
+    //     //printf("httpmsg after first cat%s\n",rString);
+    //     strcat(rString,fstring);
+    //     //printf("httpmsg after second%s\n",rString);
+    //     strcpy(buf,rString);
+    //     printf("server returning a http message with the following content.\n%s\n",buf);
+    //     write(connfd, buf,sizeof(rString));
+    //     restoreBuf(buf);
 
-        //strcat(dir,fname);
-        long int fsize = fileSize(dir);
-        int numBytes = 0;
-        int file;
-
-
-        file = open(dir, O_RDONLY); 
-        //rFile(file,fstring,MAXLINE,&numBytes); //= "\r\n\r\n<html><h1>Default</h1>";
         
-        httpmsg="HTTP/1.1 200 Document Follows\r\nContent-Type:";
-        char extmsg[] = "\r\nContent-Length:";
-        
-        strcat(rString,httpmsg);
-        strcat(rString,ext);
-        
-        strcat(rString,extmsg);
-        char sizeString[MAXLINE];
-        strtok(sizeString, "\n");
-        sprintf(sizeString, "%ld", fsize);
-        
-        strcat(rString,sizeString);
-        strcat(rString,"\r\n\r\n");
-        //strcat(rString,fstring);
-        
-        strcpy(buf,rString);
-        
-        write(connfd, buf,sizeof(rString));
-        restoreBuf(buf);
-
-        while(1){
-            if(rFile(file,fstring,MAXLINE,&numBytes)){
-                strcpy(buf,fstring);
-                write(connfd, buf,numBytes);
-                restoreBuf(buf);
-                break;
-            }
-            //rFile(file,fstring,MAXLINE,&numBytes);
-            strcpy(buf,fstring);
-            write(connfd, buf,sizeof(fstring));
-            restoreBuf(buf);
-        }
-        
-        close(file);
-        
-    }
+    // }
 }
 
 
