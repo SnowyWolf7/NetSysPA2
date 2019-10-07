@@ -1,2 +1,0 @@
-/images/exam.gif HTTP/1.1
-/favicon.ico HTTP/1.1

@@ -33,18 +33,32 @@ void restoreBuf(char* c)
 }
 
 /*read the file and return its contents*/
-int rFile(int file, char* sBuf, int s,int* numBytes)
-{
+// int rFile2(int file, char* sBuf, int s,int* numBytes,int connfd, int*totalBytes)
+// {
     
-    *numBytes = read(file,sBuf,s);
+//     *numBytes = read(file,sBuf,s);
+//     totalBytes += *numBytes;
+//     write(connfd, sBuf,*numBytes);
     
-    if(*numBytes < MAXLINE){
-        return 1;
-    }
+//     // if(*numBytes < MAXLINE){
+//     //     return 1;
+//     // }
     
-    return 0;
+//     // return 0;
     
-} 
+// } 
+// int rFile(int file, char* sBuf, int s,int* numBytes)
+// {
+    
+//     *numBytes = read(file,sBuf,s);
+    
+//     if(*numBytes < MAXLINE){
+//         return 1;
+//     }
+    
+//     return 0;
+    
+// } 
 
 /*get the file size*/
 long int fileSize(char filename[]) 
@@ -72,8 +86,11 @@ int get(int connfd){
     char rString[MAXLINE];
     char Default[14];
     char fstring[MAXLINE];
-    char getString[MAXLINE];
+    
     int numBytes = 0;
+    restoreBuf(buf);
+    restoreBuf(rString);
+    restoreBuf(fstring);
     //char httpmsg[]="HTTP/1.1 200 Document Follows\r\nContent-Type:text/html\r\nContent-Length:32\r\n\r\n<html><h1>Hello CSCI4273 Course!</h1>"; 
     char* httpmsg;
     n = read(connfd, buf, MAXLINE);
@@ -105,23 +122,27 @@ int get(int connfd){
         
         int file;
         file = open("index.html", O_RDONLY); 
-        rFile(file,fstring,MAXLINE,&numBytes);
+        //rFile(file,fstring,MAXLINE,&numBytes);
+        char* sBuf;
+        int s = MAXLINE;
+        numBytes = read(file,sBuf,s);
 
         httpmsg="HTTP/1.1 200 Document Follows\r\nContent-Type:text/html\r\nContent-Length:";
 
         char sizeString[4];
         sprintf(sizeString, "%ld", fsize);
-        //printf("sizeString %s\n",sizeString);
+        
         strcat(rString, httpmsg);
-        //printf("rString%s\n",rString);
+        
         strcat(rString,sizeString);
-        //printf("httpmsg after first cat%s\n",rString);
-        strcat(rString,fstring);
-        //printf("httpmsg after second%s\n",rString);
+        
+        //strcat(rString,fstring);
+        strcat(rString,sBuf);
+        
         strcpy(buf,rString);
-        //printf("server returning a http message with the following content.\n%s\n",buf);
+       
         write(connfd, buf,sizeof(rString));
-        restoreBuf(buf);
+        
     }
 
     else{
@@ -135,7 +156,7 @@ int get(int connfd){
                 break;
             }
             dir[i-1] = filepath[i];
-            printf("%c\n",filepath[i]);
+            //printf("%c\n",filepath[i]);
             i++;
         }
         
@@ -173,56 +194,68 @@ int get(int connfd){
             q++;
         }
         
-        /*write to a file to see the commands*/
-            FILE* fptr = fopen("PrintStatements.txt", "a");
-            fputs(dir, fptr);
-            fclose(fptr);
-        /*end of file write*/
-
-        //strcat(dir,fname);
         long int fsize = fileSize(dir);
         int numBytes = 0;
         int file;
-
-
-        file = open(dir, O_RDONLY); 
-        //rFile(file,fstring,MAXLINE,&numBytes); //= "\r\n\r\n<html><h1>Default</h1>";
-        
-        httpmsg="HTTP/1.1 200 Document Follows\r\nContent-Type:";
-        char extmsg[] = "\r\nContent-Length:";
-        
-        strcat(rString,httpmsg);
-        strcat(rString,ext);
-        
-        strcat(rString,extmsg);
-        char sizeString[MAXLINE];
-        strtok(sizeString, "\n");
-        sprintf(sizeString, "%ld", fsize);
-        
-        strcat(rString,sizeString);
-        strcat(rString,"\r\n\r\n");
-        //strcat(rString,fstring);
-        
-        strcpy(buf,rString);
-        
-        write(connfd, buf,sizeof(rString));
-        restoreBuf(buf);
-
-        while(1){
-            if(rFile(file,fstring,MAXLINE,&numBytes)){
-                strcpy(buf,fstring);
-                write(connfd, buf,numBytes);
-                restoreBuf(buf);
-                break;
-            }
-            //rFile(file,fstring,MAXLINE,&numBytes);
-            strcpy(buf,fstring);
-            write(connfd, buf,sizeof(fstring));
-            restoreBuf(buf);
+        if(fsize == -1){
+            printf("stupid favicon\n");
+            
         }
-        
-        close(file);
-        
+        else{
+
+            file = open(dir, O_RDONLY); 
+            
+            httpmsg="HTTP/1.1 200 Document Follows\r\nContent-Type:";
+            char extmsg[] = "\r\nContent-Length:";
+            restoreBuf(rString);
+            strcat(rString,httpmsg);
+            strcat(rString,ext);
+            
+            strcat(rString,extmsg);
+            char sizeString[MAXLINE];
+            strtok(sizeString, "\n");
+            
+            sprintf(sizeString, "%ld", fsize);
+            
+            strcat(rString,sizeString);
+            strcat(rString,"\r\n\r\n");
+            //strcat(rString,fstring);
+            restoreBuf(buf);
+            strcpy(buf,rString);
+            printf("%s\n",buf);
+            int error = write(connfd, buf,strlen(rString));
+            printf("write returns: %d\n",error);
+            //restoreBuf(buf);
+            // while(1){
+            //     //restoreBuf(fstring);
+            //     if(rFile(file,fstring,MAXLINE,&numBytes)){
+            //         strcpy(buf,fstring);
+                    
+            //         printf("%s\n", buf);
+            //         error = write(connfd, buf,numBytes);
+            //         printf("write returns: %d\n",error);
+            //         //restoreBuf(buf);
+            //         break;
+            //     }
+                
+            //     strcpy(buf,fstring);
+            //     printf("%s\n", buf);
+            //     error = write(connfd, buf,sizeof(buf));
+            //     printf("write returns: %d\n",error);
+            //     //restoreBuf(buf);
+            // }
+            int totalBytes = 0;
+            //char* sBuf;
+            //int s = MAXLINE;
+            while(totalBytes < fsize){
+                //rFile2(file,fstring,MAXLINE,&numBytes,connfd,&totalBytes);
+                numBytes = read(file,rString,MAXLINE);
+                totalBytes += numBytes;
+                write(connfd, rString,numBytes);
+            }
+            
+            close(file);
+        }
     }
 }
 
