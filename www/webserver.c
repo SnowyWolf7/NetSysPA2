@@ -114,18 +114,20 @@ int get(int connfd){
         Default[i] = buf[i];
     }
 
+    //printf("The DEFAULT is: %s\n", Default);
     /*if nothing or a directory is requested show default index.html*/
     if(strcmp(Default, "GET / HTTP/1.1") == 0){
-        //printf("Requesting Default webpage\n");
+        //printf("REQUESTING DEFAULT WEBPAGE\n");
         //int numBytes = 0;
         long int fsize = fileSize("index.html");
         
         int file;
         file = open("index.html", O_RDONLY); 
         //rFile(file,fstring,MAXLINE,&numBytes);
-        char* sBuf;
-        int s = MAXLINE;
-        numBytes = read(file,sBuf,s);
+        
+        char sBuf[MAXLINE];
+        
+        numBytes = read(file,sBuf,MAXLINE);
 
         httpmsg="HTTP/1.1 200 Document Follows\r\nContent-Type:text/html\r\nContent-Length:";
 
@@ -135,12 +137,12 @@ int get(int connfd){
         strcat(rString, httpmsg);
         
         strcat(rString,sizeString);
-        
+        //printf("sBUF is: %s\n",sBuf);
         //strcat(rString,fstring);
         strcat(rString,sBuf);
         
         strcpy(buf,rString);
-       
+       //printf("buf is: %s\n",buf);
         write(connfd, buf,sizeof(rString));
         
     }
@@ -198,7 +200,10 @@ int get(int connfd){
         int numBytes = 0;
         int file;
         if(fsize == -1){
-            printf("stupid favicon\n");
+            printf("HTTP/1.1 500 Internal Server Error\n");
+            char msg[] = "HTTP/1.1 500 Internal Server Error";
+            write(connfd, msg, strlen(msg));
+            return 0;
             
         }
         else{
