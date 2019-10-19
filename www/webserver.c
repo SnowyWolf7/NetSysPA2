@@ -94,8 +94,10 @@ int get(int connfd){
     //char httpmsg[]="HTTP/1.1 200 Document Follows\r\nContent-Type:text/html\r\nContent-Length:32\r\n\r\n<html><h1>Hello CSCI4273 Course!</h1>"; 
     char* httpmsg;
     n = read(connfd, buf, MAXLINE);
-    printf("server received the following request:\n%s\n",buf);
-    
+    //printf("server received the following request:\n%s\n",buf);
+    if(strlen(buf) == 0){
+        return 0;
+    }
     int a = 0;
     int b = 4;
     int buflength = strlen(buf) - 1;
